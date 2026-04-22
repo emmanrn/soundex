@@ -1,20 +1,30 @@
 NAME := soundex
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror -Iinclude
+SRC_DIR := src
+BIN_DIR := bin
+TARGET := $(BIN_DIR)/$(NAME)
 
-SRC := src/main.c src/error.c src/file.c src/soundex.c src/dynarray.c src/fuzzy_search.c src/dice_co.c src/merge_sort.c
-OBJ := $(SRC:.c=.o)
+SRC := $(wildcard $(SRC_DIR)/*.c)
+OBJ := $(SRC:$(SRC_DIR)/%.c=$(BIN_DIR)/%.o)
 
-all: $(NAME)
+all: $(BIN_DIR) $(TARGET)
 
-$(NAME): $(OBJ)
-	$(CC) $(FLAGS) -o $@ $(OBJ)
+$(BIN_DIR):
+	mkdir -p $(BIN_DIR)
+# $@ ----> $(TARGET)
+# $^ ----> $(OBJ)
+$(TARGET): $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^
+
+$(BIN_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJ)
+	rm -rf $(BIN_DIR)
 
 fclean: clean
-	rm -f $(NAME)
+	rm -f $(BIN_DIR)/$(NAME)
 
 re: fclean all
 
