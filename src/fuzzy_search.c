@@ -3,19 +3,28 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int search(const char *input, s_vec *v, char **out_res, s_vec* out_vec) {
+int search(char** input_codes, size_t n_input_codes, size_t query_split, s_vec *v, s_vec* out_vec) {
   int matches = 0;
   for (size_t i = 0; i < v->size; i++) {
     s_entry* e = (s_entry *)vec_at(v, i);
     char *og = e->original;
-    size_t len = strlen(og) + 1;
+    int already_matched = 0;
 
-    for (size_t j = 0; j < e->n_codes; j++) {
-      char* s = e->codes[j];
-      if (strncmp(input, s, strlen(input)) == 0) {
-        out_res[matches] = malloc(len);
+    if (query_split > e->n_codes) {
+      continue;
+    }
 
-        if (out_res[matches]) {
+    // check first if the input codes is not yet in the out_res
+    // if not then push it to the res_vec
+    for (size_t j = 0; j < e->n_codes && !already_matched; j++) {
+      for (size_t c = 0; c < n_input_codes && !already_matched; c++) {
+        if (strcmp(e->codes[j], input_codes[c]) == 0) {
+          already_matched = 1;
+        }
+      }
+    }
+
+    if (already_matched) {
           // push the matched soundex entry to the results vector
           size_t len1 = strlen(og) + 1;
 
@@ -56,17 +65,7 @@ int search(const char *input, s_vec *v, char **out_res, s_vec* out_vec) {
             err_set_parse();
             return -1;
           }
-          strncpy(out_res[matches], og, len);
           matches++;
-        } else {
-          for (size_t c = 0; c < e->n_codes; c++) {
-            free(out_res[c]);
-          }
-          free(out_res);
-          err_set_parse();
-          return -1;
-        }
-      }
     }
   }
   return matches;

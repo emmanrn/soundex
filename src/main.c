@@ -10,7 +10,7 @@
 // }
 
 // splits separated queries into tokens, and returns number of splits
-static int split_query(char* query, char*** out_split) {
+static size_t split_query(char* query, char*** out_split) {
     size_t len = strlen(query) + 1;
     char* tmp = malloc(len);
     strncpy(tmp, query, len);
@@ -54,14 +54,14 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    char query[MAX_LEN];
-    // strncpy(query, argv[1], MAX_LEN);
-
     char** split = NULL;
-    int n_split = split_query(argv[1], &split);
+    size_t n_split = split_query(argv[1], &split);
 
     char original_query[MAX_LEN];
     strncpy(original_query, argv[1], MAX_LEN);
+
+    char** original_split = NULL;
+    size_t n_original_split = split_query(argv[1], &original_split);
 
     s_vec sounds;
     s_vec res_vec;
@@ -75,51 +75,57 @@ int main(int argc, char* argv[]) {
     // read_files(&sounds, ".");
 
     for (size_t i = 0; i < sounds.size; i++) {
+        double total = 0.0;
         s_entry* e = (s_entry*)vec_at(&sounds, i);
-        for (size_t j = 0; j < e->n_codes; j++) {
-            get_dice_score(e, original_query, e->tokens[j]);
-        }
+
+            for (size_t c = 0; c < n_original_split; c++) {
+                double best = 0.0;
+                size_t j = 0;
+                while (j < e->n_codes) {
+                    double d = get_dice_score(original_split[c], e->tokens[j]);
+                    if (d > best) best = d;
+                    j++;
+                }
+                total += best;
+            }
+        double penalty = (double)n_original_split / (double)e->n_codes;
+        e->score = (total / (double)n_original_split) * penalty;
     }
 
     soundex(&sounds);
-    for (int i = 0; i < n_split; i++) {
+    for (size_t i = 0; i < n_split; i++) {
         soundex_str(split[i]);
     }
 
     // init the array
-    char** results = malloc(sounds.size * sizeof(char*));
     int matches = 0;
 
     // looping through each string in the query
-    for (int i = 0; i < n_split; i++) {
-        matches = search(split[i], &sounds, results, &res_vec);
-    }
+    matches = search(split, n_split, n_original_split, &sounds, &res_vec);
     topDownMergeSort(&res_vec, &temp, res_vec.size);
 
     if (matches > 0) {
-        printf("'%d' Matches Found for '%s' (%s)\n", matches, argv[1], query);
-        // for (int i = 0; i < matches; i++) {
-        //     printf("%s\n", results[i]);
-        // }
+        printf("'%d' Matches Found for '%s' ", matches, argv[1]);
+        for (size_t i = 0; i < n_split; i++) {
+            printf("(%s) ", split[i]);
+        }
+        printf("\n");
 
         for (int i = 0; i < matches; i++) {
             s_entry* e = (s_entry*)vec_at(&res_vec, i);
             printf("%s ----> %f\n", e->original, e->score);
+
             for (size_t j = 0; j < e->n_codes; j++) {
                 printf("%s ----> %s\n", e->tokens[j], e->codes[j]);
             }
             printf("\n");
         }
 
-        for (int i = 0; i < matches; i++) {
-            free(results[i]);
-        }
     } else if (matches == 0) {
-        printf("no match found for '%s' (%s)\n", argv[1], query);
+        printf("no match found for '%s'\n", argv[1]);
     }
 
 
-    free(results);
     vec_free(&sounds);
     vec_free(&res_vec);
     free(temp.data);

@@ -43,10 +43,10 @@ int soundex(s_vec* out_sounds);
 int soundex_str(char* query);
 
 // fuzzy search: return 0 on found match, negative: error, positive: not found
-int search(const char* input, s_vec* v, char** out_res, s_vec* out_vec);
+int search(char** input_codes, size_t n_input_codes, size_t query_split, s_vec* v, s_vec* out_vec);
 
 // dice coefficient
-void get_dice_score(s_entry* out, char* input, char* og);
+double get_dice_score(char* input, char* og);
 
 //merge sort
 void topDownMergeSort(s_vec* a, s_vec* b, size_t len);

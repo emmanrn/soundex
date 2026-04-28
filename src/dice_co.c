@@ -30,35 +30,22 @@ static int count_common(char *str1, size_t len1, char *str2,
   return count;
 }
 
-static void push_score(s_entry* out, double value) {
-    out->score = value;
-}
 
-void get_dice_score(s_entry* out, char *input, char *og) {
+double get_dice_score(char *input, char *og) {
   // do some dice coefficient math and set the score to it
-    double dice = 0;
   // check if strings are literally the same
-  if (strlen(input) == strlen(og)) {
-    if (strncmp(input, og, strlen(og)) == 0) {
-      dice = 1;
-      push_score(out, dice);
-      return;
-    }
+  if (strcmp(input, og) == 0) {
+    return 1.0;
   }
 
   double sum = (double)(strlen(input) + strlen(og));
 
   double common = (double)count_common(input, strlen(input), og, strlen(og));
   if (common == -1) {
-    err_set_parse();
-    printf("Null strings\n");
-    return;
+    return -1.0;
   }
 
-  dice = (2.0 * common) / sum;
-  if (dice > out->score) {
-    push_score(out, dice);
-  }
+  double dice = (2.0 * common) / sum;
 
-  return;
+  return (2.0 * common) / sum;
 }
