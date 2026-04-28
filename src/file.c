@@ -6,6 +6,18 @@
 #include <ctype.h>
 #include <dirent.h>
 
+static void convert_to_lower(char* s) {
+    size_t len = strlen(s);
+    if (s[len - 1] == '\n') {
+        s[len - 1] = '\0';
+        len = len - 1;
+    }
+
+    for (size_t i = 0; i < len; i++) {
+        s[i] = tolower(s[i]);
+    }
+}
+
 static int push_str(s_vec* out, char* value) {
     size_t len = strlen(value) + 1;
 
@@ -45,6 +57,7 @@ static int push_str(s_vec* out, char* value) {
     //copy words into the codes array
     char* tmp2 = malloc(len);
     strncpy(tmp2, value, len);
+    convert_to_lower(tmp2);
 
     token = strtok(tmp2, "_-.");
     size_t i = 0;
@@ -61,18 +74,6 @@ static int push_str(s_vec* out, char* value) {
     return vec_push(out, &e);
 }
 
-static void convert_to_lower(char* s) {
-    size_t len = strlen(s);
-    if (s[len - 1] == '\n') {
-        s[len - 1] = '\0';
-        len = len - 1;
-    }
-
-    for (size_t i = 0; i < len; i++) {
-        s[i] = tolower(s[i]);
-    }
-}
-
 int read_and_get_names(s_vec* out_sounds, const char* file_name) {
     FILE* file = fopen(file_name, "r");
 
@@ -86,7 +87,6 @@ int read_and_get_names(s_vec* out_sounds, const char* file_name) {
     while(!feof(file) && !ferror(file)) {
         char s[MAX_LEN];
         if (fgets(s, MAX_LEN, file) != NULL) {
-            convert_to_lower(s);
             push_str(out_sounds, s);
             line++;
         }
@@ -108,11 +108,22 @@ void read_files(s_vec* out_sounds, const char* dirname) {
     struct dirent* entry;
     entry = readdir(dir);
     while (entry != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, ".git") == 0) {
             entry = readdir(dir);
             continue;
         }
-        printf("%s\n", entry->d_name);
+    
+        if (entry->d_type == DT_DIR) {
+            char path[100] = { 0 };
+            strncat(path, dirname, strlen(path) + strlen(dirname));
+            strncat(path, "/", strlen(path) + 1);
+            strncat(path, entry->d_name, strlen(path) + strlen(entry->d_name));
+            read_files(out_sounds, path);
+        }
+
+        if (entry->d_type == DT_REG) {
+            push_str(out_sounds, entry->d_name);
+        }
         entry = readdir(dir);
     }
 

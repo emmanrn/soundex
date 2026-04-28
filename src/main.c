@@ -71,12 +71,22 @@ int main(int argc, char* argv[]) {
     vec_init(&res_vec, sizeof(s_entry));
     vec_init(&temp, sizeof(s_entry));
 
-    read_and_get_names(&sounds, "names.txt");
-    // read_files(&sounds, ".");
+    // read_and_get_names(&sounds, "names.txt");
+    read_files(&sounds, ".");
 
-    for (size_t i = 0; i < sounds.size; i++) {
+    soundex(&sounds);
+    for (size_t i = 0; i < n_split; i++) {
+        soundex_str(split[i]);
+    }
+
+    int matches = 0;
+
+    // looping through each string in the query
+    matches = search(split, n_split, n_original_split, &sounds, &res_vec);
+
+    for (size_t i = 0; i < res_vec.size; i++) {
         double total = 0.0;
-        s_entry* e = (s_entry*)vec_at(&sounds, i);
+        s_entry* e = (s_entry*)vec_at(&res_vec, i);
 
             for (size_t c = 0; c < n_original_split; c++) {
                 double best = 0.0;
@@ -88,20 +98,11 @@ int main(int argc, char* argv[]) {
                 }
                 total += best;
             }
+
         double penalty = (double)n_original_split / (double)e->n_codes;
         e->score = (total / (double)n_original_split) * penalty;
     }
 
-    soundex(&sounds);
-    for (size_t i = 0; i < n_split; i++) {
-        soundex_str(split[i]);
-    }
-
-    // init the array
-    int matches = 0;
-
-    // looping through each string in the query
-    matches = search(split, n_split, n_original_split, &sounds, &res_vec);
     topDownMergeSort(&res_vec, &temp, res_vec.size);
 
     if (matches > 0) {
@@ -113,14 +114,8 @@ int main(int argc, char* argv[]) {
 
         for (int i = 0; i < matches; i++) {
             s_entry* e = (s_entry*)vec_at(&res_vec, i);
-            printf("%s ----> %f\n", e->original, e->score);
-
-            for (size_t j = 0; j < e->n_codes; j++) {
-                printf("%s ----> %s\n", e->tokens[j], e->codes[j]);
-            }
-            printf("\n");
+            printf("%s\n", e->original);
         }
-
     } else if (matches == 0) {
         printf("no match found for '%s'\n", argv[1]);
     }

@@ -45,7 +45,5 @@ double get_dice_score(char *input, char *og) {
     return -1.0;
   }
 
-  double dice = (2.0 * common) / sum;
-
   return (2.0 * common) / sum;
 }

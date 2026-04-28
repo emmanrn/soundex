@@ -8,7 +8,7 @@ int search(char** input_codes, size_t n_input_codes, size_t query_split, s_vec *
   for (size_t i = 0; i < v->size; i++) {
     s_entry* e = (s_entry *)vec_at(v, i);
     char *og = e->original;
-    int already_matched = 0;
+    size_t match_count = 0;
 
     if (query_split > e->n_codes) {
       continue;
@@ -16,15 +16,16 @@ int search(char** input_codes, size_t n_input_codes, size_t query_split, s_vec *
 
     // check first if the input codes is not yet in the out_res
     // if not then push it to the res_vec
-    for (size_t j = 0; j < e->n_codes && !already_matched; j++) {
-      for (size_t c = 0; c < n_input_codes && !already_matched; c++) {
+    for (size_t j = 0; j < e->n_codes; j++) {
+      for (size_t c = 0; c < n_input_codes; c++) {
         if (strcmp(e->codes[j], input_codes[c]) == 0) {
-          already_matched = 1;
+          match_count++;
+          break;
         }
       }
     }
 
-    if (already_matched) {
+    if (match_count == n_input_codes) {
           // push the matched soundex entry to the results vector
           size_t len1 = strlen(og) + 1;
 
