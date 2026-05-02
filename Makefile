@@ -1,6 +1,7 @@
 NAME := soundex
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror -Iinclude
+LDFLAGS := -lncurses
 SRC_DIR := src
 BIN_DIR := bin
 TARGET := $(BIN_DIR)/$(NAME)
@@ -15,7 +16,7 @@ $(BIN_DIR):
 # $@ ----> $(TARGET)
 # $^ ----> $(OBJ)
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@

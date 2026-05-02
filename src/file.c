@@ -18,6 +18,19 @@ static void convert_to_lower(char* s) {
     }
 }
 
+static void strip_ext(char *fname)
+{
+    char *end = fname + strlen(fname);
+
+    while (end > fname && *end != '.') {
+        --end;
+    }
+
+    if (end > fname) {
+        *end = '\0';
+    }
+}
+
 static int push_str(s_vec* out, char* value) {
     size_t len = strlen(value) + 1;
 
@@ -27,10 +40,10 @@ static int push_str(s_vec* out, char* value) {
     size_t n_codes = 0;
 
     // count number of separated words
-    char* token = strtok(tmp, "_-.");
+    char* token = strtok(tmp, "_-");
     while (token != NULL) {
         n_codes++;
-        token = strtok(NULL, "_-.");
+        token = strtok(NULL, "_-");
     }
 
     free(tmp);
@@ -57,16 +70,18 @@ static int push_str(s_vec* out, char* value) {
     //copy words into the codes array
     char* tmp2 = malloc(len);
     strncpy(tmp2, value, len);
-    convert_to_lower(tmp2);
 
-    token = strtok(tmp2, "_-.");
+    convert_to_lower(tmp2);
+    strip_ext(tmp2);
+
+    token = strtok(tmp2, "_-");
     size_t i = 0;
     while (token != NULL && i < n_codes) {
         e.codes[i] = malloc(strlen(token) + 1);
         e.tokens[i] = malloc(strlen(token) + 1);
         strncpy(e.codes[i], token, strlen(token) + 1);
         strncpy(e.tokens[i], token, strlen(token) + 1);
-        token = strtok(NULL, "_-.");
+        token = strtok(NULL, "_-");
         i++;
     }
     free(tmp2);
