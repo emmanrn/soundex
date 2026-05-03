@@ -42,8 +42,8 @@ void read_files(s_vec* v, const char* dirname);
 int soundex(s_vec* out_sounds);
 int soundex_str(char* query);
 
-// fuzzy search: return 0 on found match, negative: error, positive: not found
-int search(char** input_codes, size_t n_input_codes, size_t query_split, s_vec* v, s_vec* out_vec);
+// fuzzy search: return match_count if matches found, negative: error, 0 if no match
+int search(char** input_codes, const char* original_query, size_t n_input_codes, size_t query_split, s_vec* v, s_vec* out_vec);
 
 // dice coefficient
 double get_dice_score(char* input, char* og);

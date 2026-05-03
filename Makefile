@@ -1,8 +1,10 @@
 NAME := soundex
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror -Iinclude
+LDFLAGS := -lncurses
 SRC_DIR := src
 BIN_DIR := bin
+INSTALL_DIR := $(HOME)/.local/bin
 TARGET := $(BIN_DIR)/$(NAME)
 
 SRC := $(wildcard $(SRC_DIR)/*.c)
@@ -15,10 +17,17 @@ $(BIN_DIR):
 # $@ ----> $(TARGET)
 # $^ ----> $(OBJ)
 $(TARGET): $(OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
 
 $(BIN_DIR)/%.o: $(SRC_DIR)/%.c
 	$(CC) $(CFLAGS) -c $< -o $@
+
+install: all
+	mkdir -p $(INSTALL_DIR)
+	cp $(TARGET) $(INSTALL_DIR)/$(NAME)
+
+uninstall: 
+	rm -f $(INSTALL_DIR)/$(NAME)
 
 clean:
 	rm -rf $(BIN_DIR)
