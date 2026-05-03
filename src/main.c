@@ -1,9 +1,5 @@
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ncurses.h>
-
+#include <stdlib.h>
 
 #include "soundex.h"
 #include "tty.h"
@@ -12,8 +8,6 @@
 //         printf("RESULT CONVERTED: %s\n", s->converted);
 // }
 
-
-
 // splits separated queries into tokens, and returns number of splits
 // static size_t split_query(const char* query, char*** out_split) {
 //     size_t len = strlen(query) + 1;
@@ -21,7 +15,7 @@
 //     strncpy(tmp, query, len);
 
 //     size_t n_split = 0;
-    
+
 //     char* token = strtok(tmp, "_-.");
 //     while (token != NULL) {
 //         n_split++;
@@ -29,7 +23,6 @@
 //     }
 
 //     free(tmp);
-
 
 //     *out_split = malloc(sizeof(char*) * n_split);
 
@@ -50,7 +43,8 @@
 //     return n_split;
 // }
 
-// static int fuzzy_search(const char* query, s_vec* sounds, s_vec* res_vec, s_vec* temp) {
+// static int fuzzy_search(const char* query, s_vec* sounds, s_vec* res_vec,
+// s_vec* temp) {
 //     char** split = NULL;
 //     size_t n_split = split_query(query, &split);
 
@@ -68,7 +62,8 @@
 //     int matches = 0;
 
 //     // looping through each string in the query
-//     matches = search(split, query, n_split, n_original_split, sounds, res_vec);
+//     matches = search(split, query, n_split, n_original_split, sounds,
+//     res_vec);
 
 //     for (size_t i = 0; i < res_vec->size; i++) {
 //         double total = 0.0;
@@ -78,9 +73,8 @@
 //                 double best = 0.0;
 //                 size_t j = 0;
 //                 while (j < e->n_codes) {
-//                     double d = get_dice_score(original_split[c], e->tokens[j]);
-//                     if (d > best) best = d;
-//                     j++;
+//                     double d = get_dice_score(original_split[c],
+//                     e->tokens[j]); if (d > best) best = d; j++;
 //                 }
 //                 total += best;
 //             }
@@ -94,18 +88,7 @@
 //     return matches;
 // }
 
-
-int main(int argc, char* argv[]) {
-
-    // if (argc != 2) {
-    //     err_set_parse();
-    //     err_print_and_clear();
-    //     return 1;
-    // }
-    (void)argc;
-    (void)argv;
-    
-
+int main() {
     // init the vectors
     s_vec sounds;
     // s_vec res_vec;
@@ -131,10 +114,7 @@ int main(int argc, char* argv[]) {
     //     printf("no match found for '%s'\n", argv[1]);
     // }
 
-
-    // vec_free(&sounds);
+    vec_free(&sounds);
     // vec_free(&res_vec);
     // free(temp.data);
 }
-
-
