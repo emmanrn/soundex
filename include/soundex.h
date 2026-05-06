@@ -21,6 +21,7 @@ typedef struct s_vec {
 
 typedef struct s_entry {
     char* original;
+    char* filepath;
     char** tokens;
     char** codes;
     size_t n_codes;
@@ -34,7 +35,7 @@ void vec_free(s_vec* v);
 
 // file handling
 int read_and_get_names(s_vec* v, const char* file_name);
-void read_files(s_vec* v, const char* dirname);
+void read_files(s_vec* v, char* dirname);
 
 
 

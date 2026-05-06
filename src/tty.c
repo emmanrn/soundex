@@ -1,13 +1,19 @@
-#include "search_handler.h"
-#include "soundex.h"
-#include "tty.h"
 #include <ctype.h>
 #include <ncurses.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
+
+#include "search_handler.h"
+#include "soundex.h"
+#include "tty.h"
+
+// for detecting ctrl+ combinations
+#define ctrl(x) (x & 0x1F)
 
 static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos);
-static void tty_render_results_w(WINDOW *result_win, search_ctx_t *ctx);
+static void tty_render_results_w(WINDOW *result_win, int highlight, search_ctx_t *ctx);
+static void tty_open_txt_editor(char* filepath);
 
 void tty_init() {
     initscr();
@@ -19,8 +25,8 @@ void tty_init() {
 void tty_cleanup() { endwin(); }
 
 void tty_render(WINDOW *input_win, WINDOW *result_win, char *query,
-                int cursor_pos, search_ctx_t *ctx) {
-    tty_render_results_w(result_win, ctx);
+                int cursor_pos, int highlight, search_ctx_t *ctx) {
+    tty_render_results_w(result_win, highlight, ctx);
     tty_render_input_w(input_win, query, cursor_pos);
 }
 
@@ -34,7 +40,7 @@ static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos) {
     wrefresh(input_win);
 }
 
-static void tty_render_results_w(WINDOW *result_win, search_ctx_t *ctx) {
+static void tty_render_results_w(WINDOW *result_win, int highlight, search_ctx_t *ctx) {
     werase(result_win);
     wborder(result_win, 0, 0, 0, 0, 0, 0, 0, 0);
 
@@ -51,7 +57,9 @@ static void tty_render_results_w(WINDOW *result_win, search_ctx_t *ctx) {
     if (match_count > 0) {
         for (int i = 0; i < display_count; i++) {
             s_entry *e = (s_entry *)vec_at(&ctx->results, i);
-            mvwprintw(result_win, yMax - 2 - i, 1, "%s", e->original);
+            mvwprintw(result_win, yMax - 2 - i, 1, "%s", e->filepath);
+            if (i == highlight)
+                mvwchgat(result_win, yMax - 2 - i, 1, xMax - 2, A_REVERSE, 0, NULL);
         }
     }
     wrefresh(result_win);
@@ -63,7 +71,7 @@ void tty_run(s_vec *sounds) {
     size_t len = 0;
     size_t cursor_pos = 0;
 
-    // init other vectors
+    // init context_v
     search_ctx_t ctx;
 
     search_ctx_init(&ctx);
@@ -79,13 +87,25 @@ void tty_run(s_vec *sounds) {
 
     soundex(sounds);
 
+    search_ctx_run(&ctx, query, sounds);
+
+
+    int highlight = 0;
+    int choice = 0;
+
     while (1) {
-        tty_render(input_win, result_win, query, cursor_pos, &ctx);
+        tty_render(input_win, result_win, query, cursor_pos, highlight, &ctx);
 
         int ch = wgetch(input_win);
 
         if (ch == 27)
             break;
+        if (ch == 10) {
+            choice = highlight;
+            s_entry* e = (s_entry*)vec_at(&ctx.results, choice);
+            tty_open_txt_editor(e->filepath);
+            break;
+        }
         if (ch == KEY_LEFT) {
             if (cursor_pos > 0)
                 cursor_pos--;
@@ -100,7 +120,10 @@ void tty_run(s_vec *sounds) {
                 len--;
 
                 search_ctx_run(&ctx, query, sounds);
+                highlight = 0;
             }
+        } else if (ch == 78) {
+            highlight = ((highlight) + 1) % (int)ctx.results.size;
         } else if (isprint(ch)) {
             if (len >= 100)
                 continue;
@@ -112,10 +135,20 @@ void tty_run(s_vec *sounds) {
                 len++;
 
                 search_ctx_run(&ctx, query, sounds);
+                highlight = 0;
             }
+        } else if (ch == ctrl('n')) {
+            highlight = ((highlight - 1) + (int)ctx.results.size) % (int)ctx.results.size;
         }
     }
 
     search_ctx_free(&ctx);
     tty_cleanup();
+    printf("Thank you for using\n");
+    printf("Your choice: %d\n", choice);
+}
+
+static void tty_open_txt_editor(char* filepath) {
+    tty_cleanup();
+    execl("/usr/bin/vim", "vim", filepath, NULL);
 }

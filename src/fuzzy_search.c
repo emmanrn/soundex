@@ -36,6 +36,8 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
     char *og = e->original;
     char *temp_og = malloc(strlen(og) + 1);
     memcpy(temp_og, og, strlen(og) + 1);
+    char *temp_query = malloc(strlen(original_query) + 1);
+    memcpy(temp_query, original_query, strlen(original_query) + 1);
     size_t match_count = 0;
 
     if (query_split > e->n_codes) {
@@ -43,6 +45,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
     }
 
     convert_to_lower(temp_og);
+    convert_to_lower(temp_query);
     // int prefix_matched = starts_with(temp_og , original_query);
 
     // check first if the input codes is not yet in the out_res
@@ -50,7 +53,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
     for (size_t j = 0; j < e->n_codes; j++) {
       for (size_t c = 0; c < n_input_codes; c++) {
         if (strcmp(e->codes[j], input_codes[c]) == 0 ||
-            starts_with(e->tokens[j], original_query) != 0) {
+            starts_with(e->tokens[j], temp_query) != 0) {
           match_count++;
           break;
         }
@@ -71,6 +74,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
 
           s_entry new_e = {
             .original = malloc(len1),
+            .filepath = malloc(strlen(e->filepath) + 1),
             .tokens = malloc(sizeof(char*) * e->n_codes),
             .codes = malloc(sizeof(char*) * e->n_codes),
             .n_codes = e->n_codes,
@@ -79,6 +83,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
 
           if (!new_e.original || !new_e.codes) {
             free(new_e.original);
+            free(new_e.filepath);
             free(new_e.codes);
             free(new_e.tokens);
             err_set_parse();
@@ -86,6 +91,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
           }
 
           strncpy(new_e.original, og, len1);
+          strncpy(new_e.filepath, e->filepath, strlen(e->filepath) + 1);
 
           for (size_t c = 0; c < e->n_codes; c++) {
             new_e.codes[c] = malloc(strlen(e->codes[c]) + 1);
@@ -101,6 +107,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
               free(new_e.tokens[c]);
             }
             free(new_e.original);
+            free(new_e.filepath);
             free(new_e.tokens);
             free(new_e.codes);
             err_set_parse();
@@ -109,6 +116,7 @@ int search(char** input_codes, const char* original_query, size_t n_input_codes,
           matches++;
     }
     free(temp_og);
+    free(temp_query);
   }
   return matches;
 }

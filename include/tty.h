@@ -11,7 +11,7 @@ void tty_cleanup(void);
 
 // rendering
 void tty_render(WINDOW *input_win, WINDOW *result_win, char *query,
-                int cursor_pos, search_ctx_t *ctx);
+                int cursor_pos, int hightlight, search_ctx_t *ctx);
 
 // main loop
 void tty_run(s_vec *sounds);

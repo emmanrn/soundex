@@ -31,7 +31,7 @@ static void strip_ext(char *fname)
     }
 }
 
-static int push_str(s_vec* out, char* value) {
+static int push_str(s_vec* out, char* value, char* filepath) {
     size_t len = strlen(value) + 1;
 
     char* tmp = malloc(len);
@@ -50,6 +50,7 @@ static int push_str(s_vec* out, char* value) {
     
     s_entry e = {
         .original = malloc(len),
+        .filepath = malloc(strlen(filepath) + 1),
         .tokens = malloc(sizeof(char*) * n_codes),
         .codes = malloc(sizeof(char*) * n_codes),
         .n_codes = n_codes,
@@ -59,6 +60,7 @@ static int push_str(s_vec* out, char* value) {
     // if failed to allocate memory
     if (!e.original || !e.codes) {
         free(e.original);
+        free(e.filepath);
         free(e.tokens);
         free(e.codes);
         err_set_parse();
@@ -66,6 +68,8 @@ static int push_str(s_vec* out, char* value) {
     }
 
     strncpy(e.original, value, len);
+    strncpy(e.filepath, filepath, strlen(filepath) + 1);
+
 
     //copy words into the codes array
     char* tmp2 = malloc(len);
@@ -89,30 +93,29 @@ static int push_str(s_vec* out, char* value) {
     return vec_push(out, &e);
 }
 
-int read_and_get_names(s_vec* out_sounds, const char* file_name) {
-    FILE* file = fopen(file_name, "r");
+// int read_and_get_names(s_vec* out_sounds, const char* file_name) {
+//     FILE* file = fopen(file_name, "r");
 
-    if (file == NULL) {
-        err_set_parse();
-        return -1;
-    }
+//     if (file == NULL) {
+//         err_set_parse();
+//         return -1;
+//     }
 
-    size_t line = 0;
+//     size_t line = 0;
 
-    while(!feof(file) && !ferror(file)) {
-        char s[MAX_LEN];
-        if (fgets(s, MAX_LEN, file) != NULL) {
-            push_str(out_sounds, s);
-            line++;
-        }
-    }
+//     while(!feof(file) && !ferror(file)) {
+//         char s[MAX_LEN];
+//         if (fgets(s, MAX_LEN, file) != NULL) {
+//             push_str(out_sounds, s);
+//             line++;
+//         }
+//     }
 
 
-    return 0;
-}
+//     return 0;
+// }
 
-void read_files(s_vec* out_sounds, const char* dirname) {
-    (void)out_sounds;
+void read_files(s_vec* out_sounds, char* dirname) {
     DIR* dir = opendir(dirname);
 
     if (dir == NULL) {
@@ -129,15 +132,19 @@ void read_files(s_vec* out_sounds, const char* dirname) {
         }
     
         if (entry->d_type == DT_DIR) {
-            char path[100] = { 0 };
-            strncat(path, dirname, strlen(path) + strlen(dirname));
-            strncat(path, "/", strlen(path) + 1);
-            strncat(path, entry->d_name, strlen(path) + strlen(entry->d_name));
+            char path[512] = { 0 };
+            strncat(path, dirname, sizeof(path) - 1);
+            strncat(path, "/", sizeof(path) - strlen(path) - 1);
+            strncat(path, entry->d_name, sizeof(path) - strlen(path) - 1);
             read_files(out_sounds, path);
         }
 
         if (entry->d_type == DT_REG) {
-            push_str(out_sounds, entry->d_name);
+            char path[512] = { 0 };
+            strncat(path, dirname, sizeof(path) - 1);
+            strncat(path, "/", sizeof(path) - strlen(path) - 1);
+            strncat(path, entry->d_name, sizeof(path) - strlen(path) - 1);
+            push_str(out_sounds, entry->d_name, path);
         }
         entry = readdir(dir);
     }

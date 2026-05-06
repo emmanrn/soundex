@@ -40,6 +40,7 @@ static void entry_free(s_entry* e) {
     }
     free((char*)e->codes);
     free((char*)e->original);
+    free((char*)e->filepath);
     free((char*)e->tokens);
 }
 void vec_free(s_vec* v) {
