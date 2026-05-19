@@ -1,7 +1,8 @@
-#include "soundex.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "soundex.h"
 
 // Copy a section of the array a into array b (from begin to end - 1)
 static void copyArray(s_vec* a, size_t begin, size_t end, s_vec* b) {

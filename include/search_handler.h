@@ -2,6 +2,7 @@
 #define SEARCH_HANDLER_H
 
 #include "soundex.h"
+#include "types.h"
 
 typedef struct {
     char **split;
@@ -10,7 +11,7 @@ typedef struct {
     size_t n_original_split;
     s_vec results;
     s_vec temp;
-    int match_count;
+    u8 match_count;
 } search_ctx_t;
 
 void search_ctx_init(search_ctx_t *ctx);

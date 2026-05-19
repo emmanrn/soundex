@@ -1,10 +1,11 @@
 #define _DEFAULT_SOURCE
-#include "soundex.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
 #include <dirent.h>
+
+#include "soundex.h"
 
 static void convert_to_lower(char* s) {
     size_t len = strlen(s);
@@ -31,7 +32,7 @@ static void strip_ext(char *fname)
     }
 }
 
-static int push_str(s_vec* out, char* value, char* filepath) {
+static i8 push_str(s_vec* out, char* value, char* filepath) {
     size_t len = strlen(value) + 1;
 
     char* tmp = malloc(len);
@@ -92,28 +93,6 @@ static int push_str(s_vec* out, char* value, char* filepath) {
 
     return vec_push(out, &e);
 }
-
-// int read_and_get_names(s_vec* out_sounds, const char* file_name) {
-//     FILE* file = fopen(file_name, "r");
-
-//     if (file == NULL) {
-//         err_set_parse();
-//         return -1;
-//     }
-
-//     size_t line = 0;
-
-//     while(!feof(file) && !ferror(file)) {
-//         char s[MAX_LEN];
-//         if (fgets(s, MAX_LEN, file) != NULL) {
-//             push_str(out_sounds, s);
-//             line++;
-//         }
-//     }
-
-
-//     return 0;
-// }
 
 void read_files(s_vec* out_sounds, char* dirname) {
     DIR* dir = opendir(dirname);

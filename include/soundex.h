@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stddef.h>
+#include "types.h"
 
 #define MAX_LINES 256
 #define MAX_LEN 256
@@ -25,29 +26,29 @@ typedef struct s_entry {
     char** tokens;
     char** codes;
     size_t n_codes;
-    double score;
+    f64 score;
 } s_entry;
 
-int vec_init(s_vec* v, size_t elem_size);
-int vec_push(s_vec* v, const void* elem);
+i8 vec_init(s_vec* v, size_t elem_size);
+i8 vec_push(s_vec* v, const void* elem);
 void* vec_at(s_vec* v, size_t i);
 void vec_free(s_vec* v);
 
 // file handling
-int read_and_get_names(s_vec* v, const char* file_name);
+i8 read_and_get_names(s_vec* v, const char* file_name);
 void read_files(s_vec* v, char* dirname);
 
 
 
 // soundex: return 0 on success, non-zero: error
-int soundex(s_vec* out_sounds);
-int soundex_str(char* query);
+i8 soundex(s_vec* out_sounds);
+i8 soundex_str(char* query);
 
 // fuzzy search: return match_count if matches found, negative: error, 0 if no match
-int search(char** input_codes, const char* original_query, size_t n_input_codes, size_t query_split, s_vec* v, s_vec* out_vec);
+i8 search(char** input_codes, const char* original_query, size_t n_input_codes, size_t query_split, s_vec* v, s_vec* out_vec);
 
 // dice coefficient
-double get_dice_score(char* input, char* og);
+f64 get_dice_score(char* input, char* og);
 
 //merge sort
 void topDownMergeSort(s_vec* a, s_vec* b, size_t len);

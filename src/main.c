@@ -11,7 +11,6 @@ int main() {
     vec_init(&sounds, sizeof(s_entry));
   
     tty_run(&sounds);
-
    
     vec_free(&sounds);
 
