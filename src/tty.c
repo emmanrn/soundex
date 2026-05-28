@@ -8,6 +8,7 @@
 #include "soundex.h"
 #include "tty.h"
 #include "types.h"
+#include "platform.h"
 
 // for detecting ctrl+ combinations
 #define ctrl(x) (x & 0x1F)
@@ -149,5 +150,6 @@ void tty_run(s_vec *sounds) {
 
 static void tty_open_txt_editor(char* filepath) {
     tty_cleanup();
-    execl("/usr/bin/vim", "vim", filepath, NULL);
+    // execl("/usr/bin/vim", "vim", filepath, NULL);
+    platform_open_editor(filepath);
 }
