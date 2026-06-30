@@ -12,8 +12,9 @@
 #define ctrl(x) (x & 0x1F)
 
 static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos);
-static void tty_render_results_w(WINDOW *result_win, int highlight, search_ctx_t *ctx);
-static void tty_open_txt_editor(char* filepath);
+static void tty_render_results_w(WINDOW *result_win, int highlight,
+                                 search_ctx_t *ctx);
+static void tty_open_txt_editor(char *filepath);
 
 void tty_init() {
     initscr();
@@ -40,7 +41,8 @@ static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos) {
     wrefresh(input_win);
 }
 
-static void tty_render_results_w(WINDOW *result_win, int highlight, search_ctx_t *ctx) {
+static void tty_render_results_w(WINDOW *result_win, int highlight,
+                                 search_ctx_t *ctx) {
     werase(result_win);
     wborder(result_win, 0, 0, 0, 0, 0, 0, 0, 0);
 
@@ -59,7 +61,8 @@ static void tty_render_results_w(WINDOW *result_win, int highlight, search_ctx_t
             s_entry *e = (s_entry *)vec_at(&ctx->results, i);
             mvwprintw(result_win, yMax - 2 - i, 1, "%s", e->filepath);
             if (i == highlight)
-                mvwchgat(result_win, yMax - 2 - i, 1, xMax - 2, A_REVERSE, 0, NULL);
+                mvwchgat(result_win, yMax - 2 - i, 1, xMax - 2, A_REVERSE, 0,
+                         NULL);
         }
     }
     wrefresh(result_win);
@@ -89,7 +92,6 @@ void tty_run(s_vec *sounds) {
 
     search_ctx_run(&ctx, query, sounds);
 
-
     int highlight = 0;
     int choice = 0;
 
@@ -102,7 +104,7 @@ void tty_run(s_vec *sounds) {
             break;
         if (ch == 10) {
             choice = highlight;
-            s_entry* e = (s_entry*)vec_at(&ctx.results, choice);
+            s_entry *e = (s_entry *)vec_at(&ctx.results, choice);
             tty_open_txt_editor(e->filepath);
             break;
         }
@@ -138,7 +140,8 @@ void tty_run(s_vec *sounds) {
                 highlight = 0;
             }
         } else if (ch == ctrl('n')) {
-            highlight = ((highlight - 1) + (int)ctx.results.size) % (int)ctx.results.size;
+            highlight = ((highlight - 1) + (int)ctx.results.size) %
+                        (int)ctx.results.size;
         }
     }
 
@@ -148,7 +151,7 @@ void tty_run(s_vec *sounds) {
     printf("Your choice: %d\n", choice);
 }
 
-static void tty_open_txt_editor(char* filepath) {
+static void tty_open_txt_editor(char *filepath) {
     tty_cleanup();
     execl("/usr/bin/vim", "vim", filepath, NULL);
 }
