@@ -1,9 +1,10 @@
 #include "soundex.h"
+#include "types.h"
 #include <stdlib.h>
 #include <string.h>
 
 
-static int vec_grow(s_vec* v) {
+static i8 vec_grow(s_vec* v) {
     size_t new_cap = 0;
 
     if (v->cap) new_cap = v->cap * 2;
@@ -20,7 +21,7 @@ static int vec_grow(s_vec* v) {
     return 0;
 }
 
-int vec_init(s_vec* v, size_t elem_size) {
+i8 vec_init(s_vec* v, size_t elem_size) {
     v->data = NULL;
     v->size = 0;
     v->cap = 0;
@@ -55,7 +56,7 @@ void vec_free(s_vec* v) {
     v->elem = 0;
 }
 
-int vec_push(s_vec* v, const void* elem) {
+i8 vec_push(s_vec* v, const void* elem) {
     if (v->size >= v->cap && vec_grow(v) != 0) {
         return -1;
     }

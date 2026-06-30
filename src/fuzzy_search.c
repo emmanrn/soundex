@@ -1,12 +1,14 @@
-#include "soundex.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <ctype.h>
 #include <alloca.h>
 
+#include "soundex.h"
+#include "types.h"
+
 // special thx to christoph in stackoverflow
-static int starts_with(const char *restrict string, const char *restrict prefix)
+static u8 starts_with(const char *restrict string, const char *restrict prefix)
 {
     while(*prefix)
     {
@@ -29,8 +31,8 @@ static void convert_to_lower(char* s) {
     }
 }
 
-int search(char** input_codes, const char* original_query, size_t n_input_codes, size_t query_split, s_vec *v, s_vec* out_vec) {
-  int matches = 0;
+i8 search(char** input_codes, const char* original_query, size_t n_input_codes, size_t query_split, s_vec *v, s_vec* out_vec) {
+  u16 matches = 0;
   for (size_t i = 0; i < v->size; i++) {
     s_entry* e = (s_entry *)vec_at(v, i);
     char *og = e->original;

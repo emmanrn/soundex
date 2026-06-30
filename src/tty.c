@@ -4,15 +4,17 @@
 #include <string.h>
 #include <unistd.h>
 
+#include "platform.h"
 #include "search_handler.h"
 #include "soundex.h"
 #include "tty.h"
+#include "types.h"
 
 // for detecting ctrl+ combinations
 #define ctrl(x) (x & 0x1F)
 
-static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos);
-static void tty_render_results_w(WINDOW *result_win, int highlight,
+static void tty_render_input_w(WINDOW *input_win, char *query, i32 cursor_pos);
+static void tty_render_results_w(WINDOW *result_win, u16 highlight,
                                  search_ctx_t *ctx);
 static void tty_open_txt_editor(char *filepath);
 
@@ -26,12 +28,12 @@ void tty_init() {
 void tty_cleanup() { endwin(); }
 
 void tty_render(WINDOW *input_win, WINDOW *result_win, char *query,
-                int cursor_pos, int highlight, search_ctx_t *ctx) {
+                i32 cursor_pos, u16 highlight, search_ctx_t *ctx) {
     tty_render_results_w(result_win, highlight, ctx);
     tty_render_input_w(input_win, query, cursor_pos);
 }
 
-static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos) {
+static void tty_render_input_w(WINDOW *input_win, char *query, i32 cursor_pos) {
     werase(input_win);
     wborder(input_win, 0, 0, 0, 0, 0, 0, 0, 0);
 
@@ -41,23 +43,23 @@ static void tty_render_input_w(WINDOW *input_win, char *query, int cursor_pos) {
     wrefresh(input_win);
 }
 
-static void tty_render_results_w(WINDOW *result_win, int highlight,
+static void tty_render_results_w(WINDOW *result_win, u16 highlight,
                                  search_ctx_t *ctx) {
     werase(result_win);
     wborder(result_win, 0, 0, 0, 0, 0, 0, 0, 0);
 
-    int yMax, xMax;
+    u32 yMax, xMax;
     getmaxyx(result_win, yMax, xMax);
     (void)xMax;
 
-    int match_count = ctx->match_count;
-    int display_count = match_count;
+    u8 match_count = ctx->match_count;
+    u8 display_count = match_count;
 
     if (display_count > yMax - 2)
         display_count = yMax - 2;
 
     if (match_count > 0) {
-        for (int i = 0; i < display_count; i++) {
+        for (u8 i = 0; i < display_count; i++) {
             s_entry *e = (s_entry *)vec_at(&ctx->results, i);
             mvwprintw(result_win, yMax - 2 - i, 1, "%s", e->filepath);
             if (i == highlight)
@@ -79,7 +81,7 @@ void tty_run(s_vec *sounds) {
 
     search_ctx_init(&ctx);
 
-    int yMax, xMax;
+    u32 yMax, xMax;
     getmaxyx(stdscr, yMax, xMax);
 
     WINDOW *input_win = newwin(3, xMax, yMax - 3, 0);
@@ -92,13 +94,13 @@ void tty_run(s_vec *sounds) {
 
     search_ctx_run(&ctx, query, sounds);
 
-    int highlight = 0;
-    int choice = 0;
+    u16 highlight = 0;
+    u16 choice = 0;
 
     while (1) {
         tty_render(input_win, result_win, query, cursor_pos, highlight, &ctx);
 
-        int ch = wgetch(input_win);
+        i32 ch = wgetch(input_win);
 
         if (ch == 27)
             break;
@@ -147,11 +149,10 @@ void tty_run(s_vec *sounds) {
 
     search_ctx_free(&ctx);
     tty_cleanup();
-    printf("Thank you for using\n");
-    printf("Your choice: %d\n", choice);
 }
 
 static void tty_open_txt_editor(char *filepath) {
     tty_cleanup();
-    execl("/usr/bin/vim", "vim", filepath, NULL);
+    // execl("/usr/bin/vim", "vim", filepath, NULL);
+    platform_open_editor(filepath);
 }

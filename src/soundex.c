@@ -1,8 +1,10 @@
-#include "soundex.h"
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#include "soundex.h"
+#include "types.h"
 
 static void remove_adjacent(char* s, const char* original) {
     size_t i = 1;
@@ -108,7 +110,7 @@ static void change_to_score(char* s) {
 }
 
 
-int soundex(s_vec* out_sounds) {
+i8 soundex(s_vec* out_sounds) {
 
     for (size_t i = 0; i < out_sounds->size; i++) {
         s_entry* e = (s_entry*)vec_at(out_sounds, i);
@@ -132,7 +134,7 @@ int soundex(s_vec* out_sounds) {
     return 0;
 }
 
-int soundex_str(char* query) {
+i8 soundex_str(char* query) {
     char* og = malloc(strlen(query) + 1);
     strncpy(og, query, strlen(query) + 1);
 

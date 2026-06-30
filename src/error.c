@@ -1,7 +1,9 @@
-#include "soundex.h"
 #include <unistd.h>
 
-static int g_err = 0;
+#include "soundex.h"
+#include "types.h"
+
+static i8 g_err = 0;
 
 void err_set_parse() {
     if (!g_err) {

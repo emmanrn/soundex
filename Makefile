@@ -6,8 +6,17 @@ SRC_DIR := src
 BIN_DIR := bin
 INSTALL_DIR := $(HOME)/.local/bin
 TARGET := $(BIN_DIR)/$(NAME)
+UNAME := $(shell uname)
 
-SRC := $(wildcard $(SRC_DIR)/*.c)
+SRC := $(filter-out $(SRC_DIR)/linux_platform.c $(SRC_DIR)/win_platform.c, $(wildcard $(SRC_DIR)/*.c))
+
+ifeq ($(UNAME), Linux)
+    SRC += $(SRC_DIR)/linux_platform.c
+#     LDFLAGS += -lncurses
+else
+    SRC += $(SRC_DIR)/win_platform.c
+endif
+
 OBJ := $(SRC:$(SRC_DIR)/%.c=$(BIN_DIR)/%.o)
 
 all: $(BIN_DIR) $(TARGET)

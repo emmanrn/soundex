@@ -1,7 +1,9 @@
-#include "search_handler.h"
-#include "soundex.h"
 #include <stdlib.h>
 #include <string.h>
+
+#include "search_handler.h"
+#include "soundex.h"
+#include "types.h"
 
 static size_t split_query(const char *query, char ***out_split) {
     size_t len = strlen(query) + 1;
@@ -37,24 +39,24 @@ static size_t split_query(const char *query, char ***out_split) {
     return n_split;
 }
 
-static int fuzzy_search(const char *query, char **split, char **original_split,
+static u8 fuzzy_search(const char *query, char **split, char **original_split,
                         size_t n_split, size_t n_original_split, s_vec *sounds,
                         s_vec *results, s_vec *temp) {
 
-    int matches = 0;
+    u8 matches = 0;
 
     // looping through each string in the query
     matches = search(split, query, n_split, n_original_split, sounds, results);
 
     for (size_t i = 0; i < results->size; i++) {
-        double total = 0.0;
+        f64 total = 0.0;
         s_entry *e = (s_entry *)vec_at(results, i);
 
         for (size_t c = 0; c < n_original_split; c++) {
-            double best = 0.0;
+            f64 best = 0.0;
             size_t j = 0;
             while (j < e->n_codes) {
-                double d = get_dice_score(original_split[c], e->tokens[j]);
+                f64 d = get_dice_score(original_split[c], e->tokens[j]);
                 if (d > best)
                     best = d;
                 j++;
@@ -62,8 +64,8 @@ static int fuzzy_search(const char *query, char **split, char **original_split,
             total += best;
         }
 
-        double penalty = (double)n_original_split / (double)e->n_codes;
-        e->score = (total / (double)n_original_split) * penalty;
+        f64 penalty = (f64)n_original_split / (f64)e->n_codes;
+        e->score = (total / (f64)n_original_split) * penalty;
     }
 
     topDownMergeSort(results, temp, results->size);
