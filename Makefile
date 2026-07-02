@@ -35,6 +35,10 @@ install: all
 	mkdir -p $(INSTALL_DIR)
 	cp $(TARGET) $(INSTALL_DIR)/$(NAME)
 
+test_match: src/match.c src/test_match.c
+	$(CC) $(CFLAGS) -o bin/test_match src/match.c src/test_match.c
+	./bin/test_match
+
 uninstall: 
 	rm -f $(INSTALL_DIR)/$(NAME)
 
@@ -50,4 +54,4 @@ re: fclean all
 asan: CFLAGS += -g3 -fsanitize=address
 asan: re
 
-.PHONY: all clean fclean re asan
+.PHONY: all clean fclean re asan test_match

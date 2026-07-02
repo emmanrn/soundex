@@ -5,10 +5,10 @@
 #include "types.h"
 
 typedef struct {
-    char **split;
-    char **original_split;
-    size_t n_split;
-    size_t n_original_split;
+    // char **split;
+    // char **original_split;
+    // size_t n_split;
+    // size_t n_original_split;
     s_vec results;
     s_vec temp;
     u8 match_count;

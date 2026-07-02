@@ -26,6 +26,7 @@ typedef struct s_entry {
     char **tokens;
     char **codes;
     size_t n_codes;
+    size_t n_filepath;
     f64 score;
 } s_entry;
 

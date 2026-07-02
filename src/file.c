@@ -1,13 +1,13 @@
 #define _DEFAULT_SOURCE
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
 #include <ctype.h>
 #include <dirent.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "soundex.h"
 
-static void convert_to_lower(char* s) {
+static void convert_to_lower(char *s) {
     size_t len = strlen(s);
     if (s[len - 1] == '\n') {
         s[len - 1] = '\0';
@@ -19,8 +19,7 @@ static void convert_to_lower(char* s) {
     }
 }
 
-static void strip_ext(char *fname)
-{
+static void strip_ext(char *fname) {
     char *end = fname + strlen(fname);
 
     while (end > fname && *end != '.') {
@@ -32,31 +31,30 @@ static void strip_ext(char *fname)
     }
 }
 
-static i8 push_str(s_vec* out, char* value, char* filepath) {
+static i8 push_str(s_vec *out, char *value, char *filepath) {
     size_t len = strlen(value) + 1;
 
-    char* tmp = malloc(len);
+    char *tmp = malloc(len);
     strncpy(tmp, value, len);
-    
+
     size_t n_codes = 0;
 
     // count number of separated words
-    char* token = strtok(tmp, "_-");
+    char *token = strtok(tmp, "_-");
     while (token != NULL) {
         n_codes++;
         token = strtok(NULL, "_-");
     }
 
     free(tmp);
-    
-    s_entry e = {
-        .original = malloc(len),
-        .filepath = malloc(strlen(filepath) + 1),
-        .tokens = malloc(sizeof(char*) * n_codes),
-        .codes = malloc(sizeof(char*) * n_codes),
-        .n_codes = n_codes,
-        .score = 0.0
-    };
+
+    s_entry e = {.original = malloc(len),
+                 .filepath = malloc(strlen(filepath) + 1),
+                 .n_filepath = strlen(filepath) + 1,
+                 .tokens = malloc(sizeof(char *) * n_codes),
+                 .codes = malloc(sizeof(char *) * n_codes),
+                 .n_codes = n_codes,
+                 .score = 0.0};
 
     // if failed to allocate memory
     if (!e.original || !e.codes) {
@@ -71,9 +69,8 @@ static i8 push_str(s_vec* out, char* value, char* filepath) {
     strncpy(e.original, value, len);
     strncpy(e.filepath, filepath, strlen(filepath) + 1);
 
-
-    //copy words into the codes array
-    char* tmp2 = malloc(len);
+    // copy words into the codes array
+    char *tmp2 = malloc(len);
     strncpy(tmp2, value, len);
 
     convert_to_lower(tmp2);
@@ -94,24 +91,26 @@ static i8 push_str(s_vec* out, char* value, char* filepath) {
     return vec_push(out, &e);
 }
 
-void read_files(s_vec* out_sounds, char* dirname) {
-    DIR* dir = opendir(dirname);
+void read_files(s_vec *out_sounds, char *dirname) {
+    DIR *dir = opendir(dirname);
 
     if (dir == NULL) {
         err_set_parse();
         return;
     }
 
-    struct dirent* entry;
+    struct dirent *entry;
     entry = readdir(dir);
     while (entry != NULL) {
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0 || strcmp(entry->d_name, ".git") == 0) {
+        if (strcmp(entry->d_name, ".") == 0 ||
+            strcmp(entry->d_name, "..") == 0 ||
+            strcmp(entry->d_name, ".git") == 0) {
             entry = readdir(dir);
             continue;
         }
-    
+
         if (entry->d_type == DT_DIR) {
-            char path[512] = { 0 };
+            char path[512] = {0};
             strncat(path, dirname, sizeof(path) - 1);
             strncat(path, "/", sizeof(path) - strlen(path) - 1);
             strncat(path, entry->d_name, sizeof(path) - strlen(path) - 1);
@@ -119,7 +118,7 @@ void read_files(s_vec* out_sounds, char* dirname) {
         }
 
         if (entry->d_type == DT_REG) {
-            char path[512] = { 0 };
+            char path[512] = {0};
             strncat(path, dirname, sizeof(path) - 1);
             strncat(path, "/", sizeof(path) - strlen(path) - 1);
             strncat(path, entry->d_name, sizeof(path) - strlen(path) - 1);
