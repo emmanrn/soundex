@@ -1,4 +1,4 @@
-NAME := soundex
+NAME := fzn
 CC := gcc
 CFLAGS := -Wall -Wextra -Werror -Iinclude
 LDFLAGS := -lncurses

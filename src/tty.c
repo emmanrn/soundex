@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include <ncurses.h>
+#include <stddef.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -15,7 +16,7 @@
 
 static void tty_render_input_w(WINDOW *input_win, char *query, i32 cursor_pos);
 static void tty_render_results_w(WINDOW *result_win, u16 highlight,
-                                 search_ctx_t *ctx);
+                                 size_t scroll_offset, search_ctx_t *ctx);
 static void tty_open_txt_editor(char *filepath);
 
 void tty_init() {
@@ -28,8 +29,9 @@ void tty_init() {
 void tty_cleanup() { endwin(); }
 
 void tty_render(WINDOW *input_win, WINDOW *result_win, char *query,
-                i32 cursor_pos, u16 highlight, search_ctx_t *ctx) {
-    tty_render_results_w(result_win, highlight, ctx);
+                i32 cursor_pos, u16 highlight, size_t scroll_offset,
+                search_ctx_t *ctx) {
+    tty_render_results_w(result_win, highlight, scroll_offset, ctx);
     tty_render_input_w(input_win, query, cursor_pos);
 }
 
@@ -44,7 +46,7 @@ static void tty_render_input_w(WINDOW *input_win, char *query, i32 cursor_pos) {
 }
 
 static void tty_render_results_w(WINDOW *result_win, u16 highlight,
-                                 search_ctx_t *ctx) {
+                                 size_t scroll_offset, search_ctx_t *ctx) {
     werase(result_win);
     wborder(result_win, 0, 0, 0, 0, 0, 0, 0, 0);
 
@@ -52,17 +54,23 @@ static void tty_render_results_w(WINDOW *result_win, u16 highlight,
     getmaxyx(result_win, yMax, xMax);
     (void)xMax;
 
-    u8 match_count = ctx->match_count;
-    u8 display_count = match_count;
-
-    if (display_count > yMax - 2)
-        display_count = yMax - 2;
+    // u8 match_count = ctx->match_count;
+    int visible = yMax - 2;
+    size_t match_count = ctx->match_count;
 
     if (match_count > 0) {
-        for (u8 i = 0; i < display_count; i++) {
-            s_entry *e = (s_entry *)vec_at(&ctx->results, i);
+        int display_count = (int)match_count - (int)scroll_offset;
+        if (display_count > visible)
+            display_count = visible;
+
+        for (int i = 0; i < display_count; i++) {
+            size_t entry_idx = scroll_offset + i;
+            if (entry_idx >= ctx->results.size)
+                break;
+
+            s_entry *e = (s_entry *)vec_at(&ctx->results, entry_idx);
             mvwprintw(result_win, yMax - 2 - i, 1, "%s", e->filepath);
-            if (i == highlight)
+            if (entry_idx == (size_t)highlight)
                 mvwchgat(result_win, yMax - 2 - i, 1, xMax - 2, A_REVERSE, 0,
                          NULL);
         }
@@ -88,6 +96,11 @@ void tty_run(s_vec *sounds) {
     keypad(input_win, TRUE);
     WINDOW *result_win = newwin(yMax - 3, xMax, 0, 0);
 
+    int result_yMax, result_xMax;
+    getmaxyx(result_win, result_yMax, result_xMax);
+    (void)result_xMax;
+    int visible_rows = result_yMax - 2;
+
     read_files(sounds, ".");
 
     soundex(sounds);
@@ -95,10 +108,12 @@ void tty_run(s_vec *sounds) {
     search_ctx_run(&ctx, query, sounds);
 
     u16 highlight = 0;
+    size_t scroll_offset = 0;
     u16 choice = 0;
 
     while (1) {
-        tty_render(input_win, result_win, query, cursor_pos, highlight, &ctx);
+        tty_render(input_win, result_win, query, cursor_pos, highlight,
+                   scroll_offset, &ctx);
 
         i32 ch = wgetch(input_win);
 
@@ -125,9 +140,20 @@ void tty_run(s_vec *sounds) {
 
                 search_ctx_run(&ctx, query, sounds);
                 highlight = 0;
+                scroll_offset = 0;
             }
         } else if (ch == 78) {
-            highlight = ((highlight) + 1) % (int)ctx.results.size;
+            if ((size_t)highlight < ctx.results.size - 1) {
+                highlight++;
+
+                if ((size_t)highlight >= scroll_offset + (size_t)visible_rows) {
+                    scroll_offset++;
+                }
+            } else {
+                highlight = 0;
+                scroll_offset = 0;
+            }
+
         } else if (isprint(ch)) {
             if (len >= 100)
                 continue;
@@ -142,8 +168,18 @@ void tty_run(s_vec *sounds) {
                 highlight = 0;
             }
         } else if (ch == ctrl('n')) {
-            highlight = ((highlight - 1) + (int)ctx.results.size) %
-                        (int)ctx.results.size;
+            if (highlight > 0) {
+                highlight--;
+
+                if ((size_t)highlight < scroll_offset) {
+                    scroll_offset = highlight;
+                }
+            } else {
+                highlight = (int)ctx.results.size - 1;
+                if (ctx.results.size > (size_t)visible_rows) {
+                    scroll_offset = ctx.results.size - (size_t)visible_rows;
+                }
+            }
         }
     }
 
