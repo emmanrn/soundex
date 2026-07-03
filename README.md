@@ -6,7 +6,5 @@ Simple fuzzy searching experience
 make install
 
 # in any directory run
-soundex
+fzn
 ```
-
-`names.txt` is a sample test file for searching
