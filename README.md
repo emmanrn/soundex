@@ -1,15 +1,61 @@
 # Soundex
-Simple fuzzy searching experience
 
-For now only works in small codebases
+A lightweight, C-based terminal fuzzy finder for searching files by name without requiring exact matches.
 
-## Compiling and running
+Soundex recursively searches file paths from the current working directory and interactively ranks matching results as the user types.
+
+## Features
+
+- **Recursive File Search** – Searches through directories and their nested subdirectories.
+- **Fuzzy Matching** – Finds files using partial or approximate filename matches.
+- **Live Search** – Updates and ranks matching results as the user types.
+- **Interactive Terminal UI** – Provides a terminal-based interface built with ncurses.
+- **Result Ranking** – Uses a fuzzy-matching scoring algorithm to prioritize relevant file paths.
+
+## Technologies
+
+- C
+- ncurses
+- Make
+
+## Requirements
+
+- Linux
+- GCC or another compatible C compiler
+- ncurses development library
+- Make
+
+## Installation and Usage
+
+Clone the repository:
+
+```bash
+git clone https://github.com/emmanrn/soundex.git
+cd soundex
 ```
-make install
 
-# in any directory run
+Compile and install:
+
+```bash
+make install
+```
+
+Run from any directory:
+
+```bash
 fzn
 ```
 
-Future updates:
-- Optimize for large codebases
+## Current Limitations
+
+- Only works in **Linux**
+- Currently best suited for smaller codebases.
+- Performance and optimization for large codebases are still areas for improvement.
+
+## Future Improvements
+
+- Optimize search performance for larger codebases.
+- Improve file indexing and search efficiency.
+- Further refine fuzzy-matching and result ranking.# Soundex
+
+For now only works in small codebases
