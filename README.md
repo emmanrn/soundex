@@ -54,8 +54,10 @@ fzn
 
 ## Future Improvements
 
+- Fix name
+- Make it available for other desktop platforms
 - Optimize search performance for larger codebases.
 - Improve file indexing and search efficiency.
-- Further refine fuzzy-matching and result ranking.# Soundex
+- Further refine fuzzy-matching and result ranking.
 
 For now only works in small codebases
